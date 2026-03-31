@@ -7,9 +7,10 @@ interface ProfileSelectorProps {
   users: AppUser[];
   onSelect: (profile: UserProfile) => void;
   onAddUser: (name: string) => void;
+  onDeleteUser: (userId: string) => void;
 }
 
-const ProfileSelector: React.FC<ProfileSelectorProps> = ({ users, onSelect, onAddUser }) => {
+const ProfileSelector: React.FC<ProfileSelectorProps> = ({ users, onSelect, onAddUser, onDeleteUser }) => {
   const [showForm, setShowForm] = useState(false);
   const [newName, setNewName] = useState('');
 
@@ -18,6 +19,13 @@ const ProfileSelector: React.FC<ProfileSelectorProps> = ({ users, onSelect, onAd
     onAddUser(newName.trim());
     setNewName('');
     setShowForm(false);
+  };
+
+  const handleDelete = (e: React.MouseEvent, user: AppUser) => {
+    e.stopPropagation();
+    if (window.confirm(`Es-tu sûr de vouloir supprimer le profil de ${user.profile.name} ? Toutes ses données seront perdues.`)) {
+      onDeleteUser(user.profile.id);
+    }
   };
 
   return (
@@ -46,8 +54,34 @@ const ProfileSelector: React.FC<ProfileSelectorProps> = ({ users, onSelect, onAd
               cursor: 'pointer',
               transition: 'all 0.2s',
               minWidth: '150px',
+              position: 'relative',
             }}
           >
+            {/* Delete button */}
+            <button
+              onClick={(e) => handleDelete(e, user)}
+              style={{
+                position: 'absolute',
+                top: '8px',
+                right: '8px',
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                background: 'rgba(255, 0, 0, 0.1)',
+                border: '1px solid rgba(255, 0, 0, 0.2)',
+                color: 'var(--danger)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                zIndex: 2,
+              }}
+              title={`Supprimer ${user.profile.name}`}
+            >
+              ✕
+            </button>
             <div style={{
               width: '80px', height: '80px', borderRadius: 'var(--radius-full)',
               background: user.color,

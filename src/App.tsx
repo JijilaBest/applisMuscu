@@ -22,6 +22,7 @@ function App() {
           const newUser = store.addUser(name);
           setCurrentUser(newUser.profile);
         }}
+        onDeleteUser={(id) => store.removeUser(id)}
       />
     );
   }
