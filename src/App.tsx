@@ -10,7 +10,7 @@ import type { UserProfile as UserProfileType } from './types';
 import { useAppStore } from './store/useStore';
 
 //  Mode Maintenance : Mettre à true pour fermer le site temporairement
-const MAINTENANCE_MODE = false;
+const MAINTENANCE_MODE = true;
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
