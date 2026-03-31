@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Nunito:wght@400;600;700&display=swap');
+
+:root {
+  /* Color Palette - Cute Retro */
+  --bg-main: #FFF0F5; /* Lavender Blush (soft pink/white) */
+  --bg-secondary: #FFFFFF;
+  --bg-glass: rgba(255, 255, 255, 0.9);
+  --border-glass: #FFC0CB; /* Pink */
+  
+  --primary: #FF69B4; /* Hot Pink */
+  --primary-glow: rgba(255, 105, 180, 0.3);
+  --secondary: #DDA0DD; /* Plum / Light Purple */
+  --secondary-glow: rgba(221, 160, 221, 0.3);
+  
+  --text-main: #4A4A4A; /* Soft dark grey for readability */
+  --text-muted: #9E829C;
+  --text-inverse: #FFFFFF;
+  
+  --success: #32CD32;
+  --danger: #FF1493;
+  --warning: #FFD700;
+
+  /* Typography */
+  --font-main: 'Nunito', sans-serif;
+  --font-heading: 'VT323', monospace; /* Retro pixel font */
+  
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+  
+  /* Retro 3D Shadows */
+  --shadow-retro: 4px 4px 0px #FFC0CB;
+  --shadow-retro-hover: 2px 2px 0px #FFC0CB;
+  --shadow-glass: 0 8px 24px rgba(255, 105, 180, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Cute dotted background pattern */
+  background-image: radial-gradient(#FFC0CB 2px, transparent 2px);
+  background-size: 30px 30px;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: 1px;
+  font-weight: 400;
+  color: var(--primary);
+}
+
+/* Typography styles */
+.text-gradient {
+  background: linear-gradient(135deg, var(--primary) 0%, #FF1493 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-muted { color: var(--text-muted); }
+
+/* Common UI Components */
+.glass-card {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-retro);
+  padding: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-card:hover {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-retro-hover);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--text-inverse);
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #FF1493;
+  border-radius: var(--radius-sm);
+  box-shadow: 4px 4px 0px #FF1493;
+  transition: all 0.1s ease;
+}
+
+.btn-primary:active, .btn-primary:hover {
+  transform: translate(4px, 4px);
+  box-shadow: 0px 0px 0px #FF1493;
+}
+
+.btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--primary);
+  border: 2px solid var(--primary);
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-retro);
+  transition: all 0.1s ease;
+}
+
+.btn-secondary:active, .btn-secondary:hover {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-retro-hover);
+}
+
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--bg-secondary);
+  color: var(--primary);
+  border: 2px solid var(--border-glass);
+  box-shadow: 2px 2px 0px var(--border-glass);
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: var(--primary);
+  color: var(--text-inverse);
+  border-color: var(--primary);
+  box-shadow: 2px 2px 0px #FF1493;
+}
+
+/* Layout Utilities */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 1rem; }
+.gap-6 { gap: 1.5rem; }
+.gap-8 { gap: 2rem; }
+
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-8 { margin-top: 2rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-8 { margin-bottom: 2rem; }
+
+/* Custom Scrollbar - Cute Edition */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FF1493;
+}
