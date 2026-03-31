@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Check, ChevronRight, Save, CheckCircle, Circle, Play, Edit3, ArrowDown, ArrowUp, Minus, X, BarChart2 } from 'lucide-react';
+import { Plus, Check, ChevronRight, CheckCircle, Circle, Play, Edit3, ArrowDown, ArrowUp, Minus, X, BarChart2 } from 'lucide-react';
 import type { MuscleCategory, Muscle, Exercise } from '../types';
 import { mockExercises } from '../store/mockData';
 
@@ -381,7 +381,7 @@ const WorkoutLogger: React.FC = () => {
 
               {/* Planned overview */}
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginLeft: '2rem' }}>
-                Prévu : {ex.plannedSets.map((s, i) => `${s.weight}kg×${s.reps}`).join(' | ')}
+                Prévu : {ex.plannedSets.map((s) => `${s.weight}kg×${s.reps}`).join(' | ')}
               </div>
 
               {/* Editing actual sets */}
@@ -513,9 +513,6 @@ const WorkoutLogger: React.FC = () => {
           const plannedVol = ex.plannedSets.reduce((a, s) => a + s.weight * s.reps, 0);
           const actualVol = ex.actualSets.reduce((a, s) => a + s.weight * s.reps, 0);
           const exVolDiff = actualVol - plannedVol;
-          const plannedMaxW = Math.max(...ex.plannedSets.map(s => s.weight));
-          const actualMaxW = Math.max(...ex.actualSets.map(s => s.weight));
-          const wDiff = actualMaxW - plannedMaxW;
 
           return (
             <div key={exIdx} className="glass-card flex-col gap-3">

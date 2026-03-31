@@ -86,8 +86,6 @@ const Duel: React.FC<DuelProps> = ({ currentUser, allUsers }) => {
   const opName = opponent?.profile.name || 'Adversaire';
 
   // Who's winning?
-  const volWinner = myTotalVol > opTotalVol ? myName : myTotalVol < opTotalVol ? opName : 'Égalité';
-  const repsWinner = myTotalReps > opTotalReps ? myName : myTotalReps < opTotalReps ? opName : 'Égalité';
   const progWinner = myProg > opProg ? myName : myProg < opProg ? opName : 'Égalité';
 
   if (!opponent) {
