@@ -10,7 +10,7 @@ interface LayoutProps {
   onLogout: () => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, currentUser }) => {
+const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, currentUser, onLogout }) => {
   const isJisele = currentUser.id === 'user-1';
   const avatarBg = isJisele ? 'var(--primary)' : 'var(--secondary)';
   const borderColor = isJisele ? '#FF1493' : '#9B59B6';
@@ -23,16 +23,20 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, curr
           <h1 className="text-gradient" style={{ fontSize: '1.8rem' }}>
             Baddys
           </h1>
-          <div style={{
-            width: '36px', height: '36px', borderRadius: 'var(--radius-full)',
-            background: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: '#fff',
-            border: `2px solid ${borderColor}`, boxShadow: `2px 2px 0px ${borderColor}`,
-            cursor: 'pointer',
-          }}>
-            {currentUser.name.charAt(0)}
-          </div>
+          <button onClick={onLogout} className="flex items-center gap-2" style={{ background: 'none', border: 'none', cursor: 'pointer' }} title="Changer de profil">
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>{currentUser.name.split(' ')[0]}</span>
+            <div style={{
+              width: '36px', height: '36px', borderRadius: 'var(--radius-full)',
+              background: avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1.2rem', fontFamily: 'var(--font-heading)', color: '#fff',
+              border: `2px solid ${borderColor}`, boxShadow: `2px 2px 0px ${borderColor}`,
+              transition: 'transform 0.2s',
+            }}>
+              {currentUser.name.charAt(0)}
+            </div>
+          </button>
         </div>
+
       </header>
 
       {/* Zone de contenu */}
