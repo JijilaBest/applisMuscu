@@ -1,4 +1,4 @@
-export type MuscleCategory = 'Haut du Corps' | 'Bas du Corps';
+export type MuscleCategory = 'Haut du Corps' | 'Bas du Corps' | 'Cardio';
 
 export type Muscle = 
   | 'Pectoraux' 
@@ -10,7 +10,14 @@ export type Muscle =
   | 'Quadriceps' 
   | 'Ischio-jambiers' 
   | 'Fessiers' 
-  | 'Mollets';
+  | 'Mollets'
+  | 'Cœur'
+  | 'Tout le corps'
+  | 'Tapis'
+  | 'Vélo'
+  | 'Rameur'
+  | 'Elliptique'
+  | 'Escaliers';
 
 export type Exercise = {
   id: string;
@@ -30,6 +37,7 @@ export type WorkoutExercise = {
   id: string;
   exercise: Exercise;
   sets: WorkoutSet[];
+  calories?: number;
   validated: boolean;
 };
 
@@ -39,6 +47,7 @@ export type WorkoutSession = {
   name: string;
   exercises: WorkoutExercise[];
   durationMinutes: number;
+  caloriesEstimate?: number;
 };
 
 export type UserProfile = {

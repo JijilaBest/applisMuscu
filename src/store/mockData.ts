@@ -24,6 +24,12 @@ export const mockExercises: Exercise[] = [
   { id: '12', name: 'Leg Curl', muscle: 'Ischio-jambiers', category: 'Bas du Corps' },
   { id: '13', name: 'Mollets Debout', muscle: 'Mollets', category: 'Bas du Corps' },
   { id: '14', name: 'Hip Thrust', muscle: 'Fessiers', category: 'Bas du Corps' },
+  // Cardio
+  { id: '15', name: 'Tapis de Course', muscle: 'Tapis', category: 'Cardio' },
+  { id: '16', name: 'Vélo Stationnaire', muscle: 'Vélo', category: 'Cardio' },
+  { id: '17', name: 'Rameur', muscle: 'Rameur', category: 'Cardio' },
+  { id: '18', name: 'Elliptique', muscle: 'Elliptique', category: 'Cardio' },
+  { id: '19', name: 'Escaliers', muscle: 'Escaliers', category: 'Cardio' },
 ];
 
 export const mockHistory: WorkoutSession[] = [
@@ -114,6 +120,63 @@ export const mockHistory: WorkoutSession[] = [
           { id: 's14', reps: 10, weight: 100, completed: true },
           { id: 's15', reps: 8, weight: 110, completed: true }
         ]
+      }
+    ]
+  },
+  {
+    id: 'session-6',
+    date: '2026-03-31',
+    name: 'Cardio Brûle-Graisse',
+    durationMinutes: 45,
+    caloriesEstimate: 450,
+    exercises: [
+      {
+        id: 'we-6',
+        exercise: mockExercises[14], // Tapis
+        validated: true,
+        sets: [
+          { id: 'cs1', reps: 30, weight: 8, completed: true },
+        ]
+      }
+    ]
+  }
+];
+
+export const mockBaddie: UserProfile = {
+  id: 'user-3',
+  name: 'Baddie',
+  workoutsCompleted: 55,
+  joinedDate: '2025-01-01'
+};
+
+export const baddieHistory: WorkoutSession[] = [
+  {
+    id: 'b-session-1',
+    date: '2026-03-20',
+    name: 'Cardio Queen',
+    durationMinutes: 60,
+    caloriesEstimate: 600,
+    exercises: [
+      {
+        id: 'bwe-1',
+        exercise: mockExercises[14],
+        validated: true,
+        sets: [{ id: 'bs1', reps: 60, weight: 10, completed: true }]
+      }
+    ]
+  },
+  {
+    id: 'b-session-2',
+    date: '2026-03-25',
+    name: 'Full Body Burn',
+    durationMinutes: 75,
+    caloriesEstimate: 750,
+    exercises: [
+      {
+        id: 'bwe-2',
+        exercise: mockExercises[16],
+        validated: true,
+        sets: [{ id: 'bs2', reps: 45, weight: 12, completed: true }]
       }
     ]
   }

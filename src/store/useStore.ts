@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { UserProfile, WorkoutSession } from '../types';
-import { mockUser, mockHistory, mockRonan, ronanHistory, mockExercises } from './mockData';
+import { mockUser, mockHistory, mockRonan, ronanHistory, mockExercises, mockBaddie, baddieHistory } from './mockData';
 
 export type AppUser = {
   profile: UserProfile;
@@ -34,6 +34,12 @@ const defaultUsers: AppUser[] = [
     history: ronanHistory,
     color: COLORS[1].bg,
     borderColor: COLORS[1].border,
+  },
+  {
+    profile: mockBaddie,
+    history: baddieHistory,
+    color: COLORS[2].bg,
+    borderColor: COLORS[2].border,
   },
 ];
 
@@ -87,12 +93,29 @@ export function useAppStore() {
     return users.filter(u => u.profile.id !== currentId);
   };
 
+  const addWorkout = (userId: string, session: WorkoutSession) => {
+    setUsers(users.map(u => {
+      if (u.profile.id === userId) {
+        return {
+          ...u,
+          history: [session, ...u.history],
+          profile: {
+            ...u.profile,
+            workoutsCompleted: u.profile.workoutsCompleted + 1,
+          }
+        };
+      }
+      return u;
+    }));
+  };
+
   return {
     users,
     addUser,
     removeUser,
     getUserByProfile,
     getOtherUsers,
+    addWorkout,
   };
 }
 

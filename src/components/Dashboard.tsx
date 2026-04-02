@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Activity, Flame } from 'lucide-react';
 import type { UserProfile } from '../types';
 import type { AppUser } from '../store/useStore';
+import Calendar from './Calendar';
 
 interface DashboardProps {
   currentUser: UserProfile;
@@ -11,6 +12,7 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ currentUser, appUser }) => {
   const [metric, setMetric] = useState<'volume' | 'reps' | 'max'>('volume');
+  const [showCalendar, setShowCalendar] = useState(false);
 
   // Use history from appUser (store) or fallback to empty
   const history = appUser?.history || [];
@@ -47,7 +49,17 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, appUser }) => {
           <h2 className="text-gradient">Bienvenue, {firstName}</h2>
           <p className="text-muted" style={{ fontSize: '0.9rem' }}>Prêt(e) à tout donner aujourd'hui ?</p>
         </div>
-        <div className="glass-card flex items-center justify-center gap-2" style={{ padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)' }}>
+        <div 
+          onClick={() => setShowCalendar(true)}
+          className="glass-card flex items-center justify-center gap-2" 
+          style={{ 
+            padding: '0.5rem 1rem', 
+            borderRadius: 'var(--radius-full)', 
+            cursor: 'pointer',
+            border: `2px solid ${userColor}40`,
+            background: `${userColor}10`
+          }}
+        >
           <Flame color={userColor} size={24} />
           <div className="flex-col">
             <span style={{ fontSize: '1.2rem', fontWeight: 700, lineHeight: 1, fontFamily: 'var(--font-heading)' }}>{history.length}</span>
@@ -55,6 +67,14 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, appUser }) => {
           </div>
         </div>
       </div>
+
+      {showCalendar && (
+        <Calendar 
+          history={history} 
+          onClose={() => setShowCalendar(false)} 
+          userColor={userColor} 
+        />
+      )}
 
       <div className="flex gap-4" style={{ overflowX: 'auto', paddingBottom: '0.5rem' }}>
         <div className="glass-card flex-col gap-2" style={{ minWidth: '140px', flex: 1 }}>

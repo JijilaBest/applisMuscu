@@ -10,7 +10,7 @@ import type { UserProfile as UserProfileType } from './types';
 import { useAppStore } from './store/useStore';
 
 //  Mode Maintenance : Mettre à true pour fermer le site temporairement
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -40,7 +40,7 @@ function App() {
   return (
     <Layout activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser} onLogout={() => setCurrentUser(null)}>
       {activeTab === 'dashboard' && <Dashboard currentUser={currentUser} appUser={appUser} />}
-      {activeTab === 'workout' && <WorkoutLogger />}
+      {activeTab === 'workout' && <WorkoutLogger currentUser={currentUser} onSaveWorkout={(s: any) => store.addWorkout(currentUser.id, s)} />}
       {activeTab === 'profile' && <UserProfile currentUser={currentUser} appUser={appUser} onLogout={() => setCurrentUser(null)} />}
       {activeTab === 'duel' && <Duel currentUser={currentUser} allUsers={store.users} />}
     </Layout>
