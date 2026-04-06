@@ -7,14 +7,31 @@ interface UserProfileProps {
   currentUser: UserProfileType;
   appUser?: AppUser;
   onLogout: () => void;
+  onUpdatePin: (pin: string | undefined) => void;
+  onResetHistory: () => void;
 }
 
-const UserProfile: React.FC<UserProfileProps> = ({ currentUser, appUser, onLogout }) => {
+const UserProfile: React.FC<UserProfileProps> = ({ currentUser, appUser, onLogout, onUpdatePin, onResetHistory }) => {
+  const [showPinModal, setShowPinModal] = React.useState(false);
+  const [newPin, setNewPin] = React.useState('');
+  const [pinError, setPinError] = React.useState('');
+
   const avatarBg = appUser?.color || 'var(--primary)';
   const borderColor = appUser?.borderColor || '#FF1493';
   const history = appUser?.history || [];
 
-  // Calculate total volume
+  const handleSavePin = () => {
+    if (newPin.length > 0 && newPin.length !== 4) {
+      setPinError('Le PIN doit faire exactement 4 chiffres.');
+      return;
+    }
+    onUpdatePin(newPin || undefined);
+    setShowPinModal(false);
+    setNewPin('');
+    setPinError('');
+  };
+
+  // ... (volume calculation remains same)
   const totalVolume = history.reduce((acc, session) => {
     let sessionVol = 0;
     session.exercises.forEach(ex => {
@@ -27,6 +44,39 @@ const UserProfile: React.FC<UserProfileProps> = ({ currentUser, appUser, onLogou
 
   return (
     <div className="flex-col gap-6 w-full">
+      {/* PIN Modal */}
+      {showPinModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(4px)', zIndex: 1000, padding: '1rem'
+        }}>
+          <div className="glass-card flex-col gap-4" style={{ padding: '2rem', width: '100%', maxWidth: '350px' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>🔒 Sécuriser mon Profil</h3>
+            <p className="text-muted" style={{ fontSize: '0.9rem' }}>
+              Entre un code à 4 chiffres. Laisse vide pour supprimer la protection.
+            </p>
+            <input
+              type="text"
+              maxLength={4}
+              value={newPin}
+              onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
+              placeholder="Ex: 1234"
+              className="glass-card"
+              style={{
+                width: '100%', padding: '1rem', textAlign: 'center', fontSize: '1.5rem',
+                letterSpacing: '1rem', fontWeight: 900, background: 'rgba(255,255,255,0.2)'
+              }}
+            />
+            {pinError && <div style={{ color: 'var(--danger)', fontSize: '0.8rem' }}>{pinError}</div>}
+            <div className="flex gap-2">
+              <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setShowPinModal(false)}>Annuler</button>
+              <button className="btn-primary" style={{ flex: 1 }} onClick={handleSavePin}>Enregistrer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-gradient" style={{ fontSize: '1.8rem' }}>Profil</h2>
         <div className="btn-icon">
@@ -110,8 +160,16 @@ const UserProfile: React.FC<UserProfileProps> = ({ currentUser, appUser, onLogou
       <div className="flex-col gap-3 mt-4">
         <h4 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Réglages & Préférences</h4>
         <div className="glass-card flex-col" style={{ padding: '0' }}>
-          <button className="flex items-center justify-between" style={{ padding: '1rem', width: '100%', borderBottom: '1px solid var(--border-glass)' }}>
-            <span>Modifier le Profil</span>
+          <button onClick={() => { setNewPin(currentUser.pin || ''); setShowPinModal(true); }} className="flex items-center justify-between" style={{ padding: '1rem', width: '100%', borderBottom: '1px solid var(--border-glass)' }}>
+            <span className="flex items-center gap-2">
+              🔒 <span>{currentUser.pin ? 'Modifier le code PIN' : 'Ajouter un code PIN'}</span>
+            </span>
+            <ChevronRight size={16} className="text-muted" />
+          </button>
+          <button onClick={onResetHistory} className="flex items-center justify-between" style={{ padding: '1rem', width: '100%', borderBottom: '1px solid var(--border-glass)' }}>
+            <span className="flex items-center gap-2" style={{ color: 'var(--danger)' }}>
+              🔥 <span>Réinitialiser mon profil (0)</span>
+            </span>
             <ChevronRight size={16} className="text-muted" />
           </button>
           <button className="flex items-center justify-between" style={{ padding: '1rem', width: '100%', borderBottom: '1px solid var(--border-glass)' }}>
@@ -120,7 +178,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ currentUser, appUser, onLogou
           </button>
           <button onClick={onLogout} className="flex items-center justify-between" style={{ padding: '1rem', width: '100%' }}>
             <span className="flex items-center gap-2" style={{ color: 'var(--danger)' }}>
-              <LogOut size={16} /> Changer de Profil
+              <LogOut size={16} /> Déconnexion
             </span>
           </button>
         </div>

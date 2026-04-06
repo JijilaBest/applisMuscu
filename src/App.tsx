@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import WorkoutLogger from './components/WorkoutLogger';
@@ -17,6 +17,18 @@ function App() {
   const [currentUser, setCurrentUser] = useState<UserProfileType | null>(null);
   const store = useAppStore();
 
+  // Auto-login from store's activeUserId
+  useEffect(() => {
+    if (store.activeUserId && !currentUser) {
+      const user = store.getUserById(store.activeUserId);
+      if (user) {
+        setCurrentUser(user.profile);
+      } else {
+        store.setActiveUserId(null);
+      }
+    }
+  }, [store.activeUserId, store.users]);
+
   if (MAINTENANCE_MODE) {
     return <Maintenance />;
   }
@@ -25,7 +37,19 @@ function App() {
     return (
       <ProfileSelector
         users={store.users}
-        onSelect={(profile) => setCurrentUser(profile)}
+        onSelect={(profile) => {
+          if (!profile.pin) {
+            store.setActiveUserId(profile.id);
+            setCurrentUser(profile);
+          }
+          // If profile has PIN, ProfileSelector will handle the UI and then call onSelect 
+          // but we might need to change how onSelect works to handle PIN verification.
+          // For now, let's assume we pass the profile and ProfileSelector handles PIN.
+        }}
+        onConfirmPin={(profile) => {
+          store.setActiveUserId(profile.id);
+          setCurrentUser(profile);
+        }}
         onAddUser={(name) => {
           const newUser = store.addUser(name);
           setCurrentUser(newUser.profile);
@@ -38,10 +62,26 @@ function App() {
   const appUser = store.getUserByProfile(currentUser);
 
   return (
-    <Layout activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser} onLogout={() => setCurrentUser(null)}>
+    <Layout 
+      activeTab={activeTab} 
+      setActiveTab={setActiveTab} 
+      currentUser={currentUser} 
+      onLogout={() => {
+        store.logout();
+        setCurrentUser(null);
+      }}
+    >
       {activeTab === 'dashboard' && <Dashboard currentUser={currentUser} appUser={appUser} />}
-      {activeTab === 'workout' && <WorkoutLogger currentUser={currentUser} onSaveWorkout={(s: any) => store.addWorkout(currentUser.id, s)} />}
-      {activeTab === 'profile' && <UserProfile currentUser={currentUser} appUser={appUser} onLogout={() => setCurrentUser(null)} />}
+      {activeTab === 'workout' && <WorkoutLogger currentUser={currentUser} appUser={appUser} onSaveWorkout={(s: any) => store.addWorkout(currentUser.id, s)} />}
+      {activeTab === 'profile' && (
+        <UserProfile 
+          currentUser={currentUser} 
+          appUser={appUser} 
+          onLogout={() => { store.logout(); setCurrentUser(null); }} 
+          onUpdatePin={(pin) => store.updateUserPin(currentUser.id, pin)} 
+          onResetHistory={() => store.resetUserHistory(currentUser.id)}
+        />
+      )}
       {activeTab === 'duel' && <Duel currentUser={currentUser} allUsers={store.users} />}
     </Layout>
   );

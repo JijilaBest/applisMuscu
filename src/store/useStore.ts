@@ -21,6 +21,7 @@ const COLORS = [
 ];
 
 const STORAGE_KEY = 'baddys-users';
+const CURRENT_USER_KEY = 'baddys-current-user-id';
 
 const defaultUsers: AppUser[] = [
   {
@@ -59,10 +60,19 @@ function saveUsers(users: AppUser[]) {
 
 export function useAppStore() {
   const [users, setUsers] = useState<AppUser[]>(() => loadUsers());
+  const [activeUserId, setActiveUserId] = useState<string | null>(() => localStorage.getItem(CURRENT_USER_KEY));
 
   useEffect(() => {
     saveUsers(users);
   }, [users]);
+
+  useEffect(() => {
+    if (activeUserId) {
+      localStorage.setItem(CURRENT_USER_KEY, activeUserId);
+    } else {
+      localStorage.removeItem(CURRENT_USER_KEY);
+    }
+  }, [activeUserId]);
 
   const addUser = (name: string) => {
     const colorIdx = users.length % COLORS.length;
@@ -78,15 +88,37 @@ export function useAppStore() {
       borderColor: COLORS[colorIdx].border,
     };
     setUsers([...users, newUser]);
+    setActiveUserId(newUser.profile.id);
     return newUser;
   };
 
   const removeUser = (userId: string) => {
     setUsers(users.filter(u => u.profile.id !== userId));
+    if (activeUserId === userId) setActiveUserId(null);
+  };
+
+  const updateUserPin = (userId: string, pin: string | undefined) => {
+    setUsers(users.map(u => {
+      if (u.profile.id === userId) {
+        return {
+          ...u,
+          profile: { ...u.profile, pin }
+        };
+      }
+      return u;
+    }));
+  };
+
+  const logout = () => {
+    setActiveUserId(null);
   };
 
   const getUserByProfile = (profile: UserProfile): AppUser | undefined => {
     return users.find(u => u.profile.id === profile.id);
+  };
+
+  const getUserById = (id: string): AppUser | undefined => {
+    return users.find(u => u.profile.id === id);
   };
 
   const getOtherUsers = (currentId: string): AppUser[] => {
@@ -109,11 +141,35 @@ export function useAppStore() {
     }));
   };
 
+  const resetUserHistory = (userId: string) => {
+    if (window.confirm("Es-tu sûr(e) de vouloir réinitialiser ton profil ? Toutes tes séances et tes records seront effacés définitivement.")) {
+      setUsers(users.map(u => {
+        if (u.profile.id === userId) {
+          return {
+            ...u,
+            history: [],
+            profile: {
+              ...u.profile,
+              workoutsCompleted: 0,
+            }
+          };
+        }
+        return u;
+      }));
+    }
+  };
+
   return {
     users,
+    activeUserId,
+    setActiveUserId,
     addUser,
     removeUser,
+    updateUserPin,
+    resetUserHistory,
+    logout,
     getUserByProfile,
+    getUserById,
     getOtherUsers,
     addWorkout,
   };

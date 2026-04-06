@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Plus, Check, ChevronRight, CheckCircle, Circle, Play, Edit3, ArrowDown, ArrowUp, Minus, X, BarChart2, Clock, Zap, Flame } from 'lucide-react';
 import type { MuscleCategory, Muscle, Exercise, WorkoutSession, UserProfile as UserProfileType } from '../types';
-import { mockExercises, mockHistory } from '../store/mockData';
+import type { AppUser } from '../store/useStore';
+import { mockExercises } from '../store/mockData';
 
 type PlannedSet = { reps: number; weight: number };
 type ActualSet = { reps: number; weight: number; done: boolean };
@@ -18,10 +19,11 @@ type SessionPhase = 'naming' | 'planning' | 'realisation' | 'summary';
 
 interface WorkoutLoggerProps {
   currentUser?: UserProfileType;
+  appUser?: AppUser;
   onSaveWorkout?: (session: WorkoutSession) => void;
 }
 
-const WorkoutLogger: React.FC<WorkoutLoggerProps> = ({ currentUser, onSaveWorkout }) => {
+const WorkoutLogger: React.FC<WorkoutLoggerProps> = ({ currentUser, appUser, onSaveWorkout }) => {
   const [phase, setPhase] = useState<SessionPhase>('naming');
   const [sessionName, setSessionName] = useState('');
 
@@ -44,7 +46,8 @@ const WorkoutLogger: React.FC<WorkoutLoggerProps> = ({ currentUser, onSaveWorkou
   const getLastMax = (exerciseId: string) => {
     let maxW = 0;
     let maxR = 0;
-    mockHistory.forEach(s => {
+    const history = appUser?.history || [];
+    history.forEach(s => {
       s.exercises.forEach(ex => {
         if (ex.exercise.id === exerciseId) {
           ex.sets.forEach(set => {

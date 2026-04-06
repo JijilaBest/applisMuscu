@@ -55,4 +55,5 @@ export type UserProfile = {
   name: string;
   workoutsCompleted: number;
   joinedDate: string;
+  pin?: string; // 4-digit PIN for access control
 };

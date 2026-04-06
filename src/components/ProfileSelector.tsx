@@ -6,13 +6,17 @@ import type { AppUser } from '../store/useStore';
 interface ProfileSelectorProps {
   users: AppUser[];
   onSelect: (profile: UserProfile) => void;
+  onConfirmPin: (profile: UserProfile) => void;
   onAddUser: (name: string) => void;
   onDeleteUser: (userId: string) => void;
 }
 
-const ProfileSelector: React.FC<ProfileSelectorProps> = ({ users, onSelect, onAddUser, onDeleteUser }) => {
+const ProfileSelector: React.FC<ProfileSelectorProps> = ({ users, onSelect, onAddUser, onDeleteUser, onConfirmPin }) => {
   const [showForm, setShowForm] = useState(false);
   const [newName, setNewName] = useState('');
+  const [pinTarget, setPinTarget] = useState<AppUser | null>(null);
+  const [pinBuffer, setPinBuffer] = useState('');
+  const [pinError, setPinError] = useState(false);
 
   const handleAdd = () => {
     if (newName.trim() === '') return;
@@ -27,6 +31,96 @@ const ProfileSelector: React.FC<ProfileSelectorProps> = ({ users, onSelect, onAd
       onDeleteUser(user.profile.id);
     }
   };
+
+  const handleProfileClick = (user: AppUser) => {
+    if (user.profile.pin) {
+      setPinTarget(user);
+      setPinBuffer('');
+      setPinError(false);
+    } else {
+      onSelect(user.profile);
+    }
+  };
+
+  const handlePinInput = (digit: string) => {
+    if (pinBuffer.length >= 4) return;
+    const newBuffer = pinBuffer + digit;
+    setPinBuffer(newBuffer);
+    setPinError(false);
+    
+    if (newBuffer.length === 4) {
+      if (newBuffer === pinTarget?.profile.pin) {
+        onConfirmPin(pinTarget.profile);
+      } else {
+        setPinError(true);
+        setTimeout(() => setPinBuffer(''), 500);
+      }
+    }
+  };
+
+  if (pinTarget) {
+    return (
+      <div style={{
+        minHeight: '100vh', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', padding: '2rem', gap: '2rem',
+      }}>
+        <div className="glass-card flex-col items-center gap-6" style={{ padding: '2.5rem', width: '100%', maxWidth: '320px' }}>
+          <div className="flex-col items-center gap-2">
+             <div style={{
+              width: '60px', height: '60px', borderRadius: '50%',
+              background: pinTarget.color, border: `3px solid ${pinTarget.borderColor}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1.5rem', fontWeight: 900, color: '#fff'
+            }}>
+              {pinTarget.profile.name.charAt(0).toUpperCase()}
+            </div>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Salut {pinTarget.profile.name} !</h2>
+            <p className="text-muted" style={{ fontSize: '0.9rem' }}>Saisis ton code PIN</p>
+          </div>
+
+          <div className="flex gap-3 justify-center">
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} style={{
+                width: '16px', height: '16px', borderRadius: '50%',
+                background: pinBuffer.length > i ? 'var(--primary)' : 'rgba(0,0,0,0.1)',
+                border: pinError ? '2px solid var(--danger)' : '2px solid var(--border-glass)',
+                boxShadow: pinBuffer.length > i ? '0 0 10px var(--primary-glow)' : 'none',
+                transition: 'all 0.2s'
+              }} />
+            ))}
+          </div>
+
+          {pinError && <div style={{ color: 'var(--danger)', fontSize: '0.8rem', fontWeight: 700 }}>Code incorrect ! ❌</div>}
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', width: '100%' }}>
+            {['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'].map((k, i) => (
+              k === '' ? <div key={i} /> : (
+                <button
+                  key={i}
+                  onClick={() => k === '⌫' ? setPinBuffer(pinBuffer.slice(0, -1)) : handlePinInput(k)}
+                  className="glass-card flex items-center justify-center"
+                  style={{
+                    padding: '1rem', fontSize: '1.2rem', fontWeight: 800,
+                    aspectRatio: '1', cursor: 'pointer', background: 'rgba(255, 255, 255, 0.4)',
+                    color: k === '⌫' ? 'var(--danger)' : 'var(--text-main)',
+                  }}
+                >
+                  {k}
+                </button>
+              )
+            ))}
+          </div>
+
+          <button
+            onClick={() => setPinTarget(null)}
+            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.9rem', cursor: 'pointer', textDecoration: 'underline' }}
+          >
+            Retour
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -47,7 +141,7 @@ const ProfileSelector: React.FC<ProfileSelectorProps> = ({ users, onSelect, onAd
         {users.map((user) => (
           <button
             key={user.profile.id}
-            onClick={() => onSelect(user.profile)}
+            onClick={() => handleProfileClick(user)}
             className="glass-card flex-col items-center gap-3"
             style={{
               padding: '1.5rem 2rem',
@@ -57,6 +151,16 @@ const ProfileSelector: React.FC<ProfileSelectorProps> = ({ users, onSelect, onAd
               position: 'relative',
             }}
           >
+            {/* PIN indicator */}
+            {user.profile.pin && (
+              <div style={{
+                position: 'absolute', top: '10px', left: '10px',
+                fontSize: '12px', background: 'var(--primary-glow)',
+                padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--primary)'
+              }}>
+                🔒
+              </div>
+            )}
             {/* Delete button */}
             <button
               onClick={(e) => handleDelete(e, user)}
