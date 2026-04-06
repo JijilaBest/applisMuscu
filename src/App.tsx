@@ -50,9 +50,11 @@ function App() {
           store.setActiveUserId(profile.id);
           setCurrentUser(profile);
         }}
-        onAddUser={(name) => {
-          const newUser = store.addUser(name);
-          setCurrentUser(newUser.profile);
+        onAddUser={async (name) => {
+          const newUser = await store.addUser(name);
+          if (newUser) {
+            setCurrentUser(newUser.profile);
+          }
         }}
         onDeleteUser={(id) => store.removeUser(id)}
       />

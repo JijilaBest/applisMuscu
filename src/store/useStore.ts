@@ -1,112 +1,116 @@
 import { useState, useEffect } from 'react';
 import type { UserProfile, WorkoutSession } from '../types';
-import { mockUser, mockHistory, mockRonan, ronanHistory, mockExercises, mockBaddie, baddieHistory } from './mockData';
+import { supabase } from '../lib/supabase';
+import { mockExercises } from './mockData';
 
 export type AppUser = {
   profile: UserProfile;
   history: WorkoutSession[];
-  color: string;       // avatar color
-  borderColor: string; // border/shadow color
+  color: string;
+  borderColor: string;
 };
 
 const COLORS = [
-  { bg: '#FF69B4', border: '#FF1493' },  // Pink
-  { bg: '#9B59B6', border: '#7D3C98' },  // Purple
-  { bg: '#3498DB', border: '#2471A3' },  // Blue
-  { bg: '#2ECC71', border: '#27AE60' },  // Green
-  { bg: '#E67E22', border: '#D35400' },  // Orange
-  { bg: '#1ABC9C', border: '#16A085' },  // Teal
-  { bg: '#E74C3C', border: '#C0392B' },  // Red
-  { bg: '#F39C12', border: '#D4AC0D' },  // Yellow
+  { bg: '#FF69B4', border: '#FF1493' },
+  { bg: '#9B59B6', border: '#7D3C98' },
+  { bg: '#3498DB', border: '#2471A3' },
+  { bg: '#2ECC71', border: '#27AE60' },
+  { bg: '#E67E22', border: '#D35400' },
+  { bg: '#1ABC9C', border: '#16A085' },
+  { bg: '#E74C3C', border: '#C0392B' },
+  { bg: '#F39C12', border: '#D4AC0D' },
 ];
 
-const STORAGE_KEY = 'baddys-users';
 const CURRENT_USER_KEY = 'baddys-current-user-id';
 
-const defaultUsers: AppUser[] = [
-  {
-    profile: mockUser,
-    history: mockHistory,
-    color: COLORS[0].bg,
-    borderColor: COLORS[0].border,
-  },
-  {
-    profile: mockRonan,
-    history: ronanHistory,
-    color: COLORS[1].bg,
-    borderColor: COLORS[1].border,
-  },
-  {
-    profile: mockBaddie,
-    history: baddieHistory,
-    color: COLORS[2].bg,
-    borderColor: COLORS[2].border,
-  },
-];
-
-function loadUsers(): AppUser[] {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      return JSON.parse(saved);
-    }
-  } catch {}
-  return defaultUsers;
-}
-
-function saveUsers(users: AppUser[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
-}
-
 export function useAppStore() {
-  const [users, setUsers] = useState<AppUser[]>(() => loadUsers());
+  const [users, setUsers] = useState<AppUser[]>([]);
   const [activeUserId, setActiveUserId] = useState<string | null>(() => localStorage.getItem(CURRENT_USER_KEY));
 
+  // Sync activeUserId to localStorage
   useEffect(() => {
-    saveUsers(users);
-  }, [users]);
-
-  useEffect(() => {
-    if (activeUserId) {
-      localStorage.setItem(CURRENT_USER_KEY, activeUserId);
-    } else {
-      localStorage.removeItem(CURRENT_USER_KEY);
-    }
+    if (activeUserId) localStorage.setItem(CURRENT_USER_KEY, activeUserId);
+    else localStorage.removeItem(CURRENT_USER_KEY);
   }, [activeUserId]);
 
-  const addUser = (name: string) => {
-    const colorIdx = users.length % COLORS.length;
-    const newUser: AppUser = {
-      profile: {
-        id: `user-${Date.now()}`,
-        name,
-        workoutsCompleted: 0,
-        joinedDate: new Date().toISOString().substring(0, 10),
-      },
-      history: [],
-      color: COLORS[colorIdx].bg,
-      borderColor: COLORS[colorIdx].border,
+  // Initial Fetch & Realtime Subscription
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: profiles } = await supabase.from('profiles').select('*');
+      const { data: workouts } = await supabase.from('workouts').select('*').order('date', { ascending: false });
+
+      if (profiles) {
+        const mappedUsers: AppUser[] = profiles.map(p => ({
+          profile: {
+            id: p.id,
+            name: p.name,
+            pin: p.pin,
+            workoutsCompleted: p.workouts_completed,
+            joinedDate: p.joined_date,
+          },
+          history: workouts?.filter(w => w.profile_id === p.id).map(w => ({
+            id: w.id,
+            name: w.name,
+            date: w.date,
+            durationMinutes: w.duration_minutes,
+            caloriesEstimate: w.calories_estimate,
+            exercises: w.exercises,
+          })) || [],
+          color: p.color || COLORS[0].bg,
+          borderColor: p.border_color || COLORS[0].border,
+        }));
+        setUsers(mappedUsers);
+      }
     };
-    setUsers([...users, newUser]);
-    setActiveUserId(newUser.profile.id);
-    return newUser;
+
+    fetchData();
+
+    // Subscribe to Realtime changes
+    const profilesSub = supabase.channel('profiles-changes').on('postgres_changes', 
+      { event: '*', schema: 'public', table: 'profiles' }, 
+      () => fetchData()
+    ).subscribe();
+
+    const workoutsSub = supabase.channel('workouts-changes').on('postgres_changes', 
+      { event: '*', schema: 'public', table: 'workouts' }, 
+      () => fetchData()
+    ).subscribe();
+
+    return () => {
+      supabase.removeChannel(profilesSub);
+      supabase.removeChannel(workoutsSub);
+    };
+  }, []);
+
+  const addUser = async (name: string) => {
+    const colorIdx = users.length % COLORS.length;
+    const { data, error } = await supabase.from('profiles').insert([{
+      name,
+      workouts_completed: 0,
+      joined_date: new Date().toISOString().substring(0, 10),
+      color: COLORS[colorIdx].bg,
+      border_color: COLORS[colorIdx].border,
+    }]).select().single();
+
+    if (data && !error) {
+      const newUser: AppUser = {
+        profile: { id: data.id, name, workoutsCompleted: 0, joinedDate: data.joined_date },
+        history: [],
+        color: data.color,
+        borderColor: data.border_color,
+      };
+      setActiveUserId(data.id);
+      return newUser;
+    }
   };
 
-  const removeUser = (userId: string) => {
-    setUsers(users.filter(u => u.profile.id !== userId));
+  const removeUser = async (userId: string) => {
+    await supabase.from('profiles').delete().eq('id', userId);
     if (activeUserId === userId) setActiveUserId(null);
   };
 
-  const updateUserPin = (userId: string, pin: string | undefined) => {
-    setUsers(users.map(u => {
-      if (u.profile.id === userId) {
-        return {
-          ...u,
-          profile: { ...u.profile, pin }
-        };
-      }
-      return u;
-    }));
+  const updateUserPin = async (userId: string, pin: string | undefined) => {
+    await supabase.from('profiles').update({ pin }).eq('id', userId);
   };
 
   const logout = () => {
@@ -125,37 +129,30 @@ export function useAppStore() {
     return users.filter(u => u.profile.id !== currentId);
   };
 
-  const addWorkout = (userId: string, session: WorkoutSession) => {
-    setUsers(users.map(u => {
-      if (u.profile.id === userId) {
-        return {
-          ...u,
-          history: [session, ...u.history],
-          profile: {
-            ...u.profile,
-            workoutsCompleted: u.profile.workoutsCompleted + 1,
-          }
-        };
-      }
-      return u;
-    }));
+  const addWorkout = async (userId: string, session: WorkoutSession) => {
+    // 1. Insert workout
+    await supabase.from('workouts').insert([{
+      profile_id: userId,
+      name: session.name,
+      date: session.date,
+      duration_minutes: session.durationMinutes,
+      calories_estimate: session.caloriesEstimate,
+      exercises: session.exercises,
+    }]);
+
+    // 2. Increment completed count
+    const user = users.find(u => u.profile.id === userId);
+    if (user) {
+      await supabase.from('profiles')
+        .update({ workouts_completed: user.profile.workoutsCompleted + 1 })
+        .eq('id', userId);
+    }
   };
 
-  const resetUserHistory = (userId: string) => {
-    if (window.confirm("Es-tu sûr(e) de vouloir réinitialiser ton profil ? Toutes tes séances et tes records seront effacés définitivement.")) {
-      setUsers(users.map(u => {
-        if (u.profile.id === userId) {
-          return {
-            ...u,
-            history: [],
-            profile: {
-              ...u.profile,
-              workoutsCompleted: 0,
-            }
-          };
-        }
-        return u;
-      }));
+  const resetUserHistory = async (userId: string) => {
+    if (window.confirm("Es-tu sûr(e) de vouloir réinitialiser ton profil ? Toutes tes séances seront effacées.")) {
+      await supabase.from('workouts').delete().eq('profile_id', userId);
+      await supabase.from('profiles').update({ workouts_completed: 0 }).eq('id', userId);
     }
   };
 
