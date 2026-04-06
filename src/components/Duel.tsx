@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Swords, Flame, Trophy, TrendingUp, Map, Flag, Award } from 'lucide-react';
+import { Swords, Flame, Trophy, TrendingUp, Map, Award } from 'lucide-react';
 import type { WorkoutSession, UserProfile } from '../types';
 import type { AppUser } from '../store/useStore';
 
